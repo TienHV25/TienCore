@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import ModalReactive from './modal.reactive'; 
 import { useState } from 'react';
 import ModalChangePassword from './modal.change.password';
+import { authenticate } from '@/utils/action';
 
 const { Title, Text } = Typography;
 
@@ -18,27 +19,27 @@ const Login = () => {
     const [changePassword, setChangePassword] = useState(false);
 
     const onFinish = async (values: any) => {
-        const { username, password } = values;
+        const { email, password } = values;
         setUserEmail("");
         //trigger sign-in
-        // const res = await authenticate(username, password);
+        const res = await authenticate(email, password);
 
-        // if (res?.error) {
-        //     //error
-        //     if (res?.code === 2) {
-        //         setIsModalOpen(true);
-        //         setUserEmail(username);
-        //         return;
-        //     }
-        //     notification.error({
-        //         message: "Error login",
-        //         description: res?.error
-        //     })
+        if (res?.error) {
+            //error
+            if (res?.code === 2) {
+                setIsModalOpen(true);
+                setUserEmail(email);
+                return;
+            }
+            notification.error({
+                message: "Error login",
+                description: res?.error
+            })
 
-        // } else {
-        //     //redirect to /dashboard
-        //     router.push('/dashboard');
-        // }
+        } else {
+            //redirect to /dashboard
+            router.push('/dashboard');
+        }
     };
 
     return (
@@ -75,7 +76,7 @@ const Login = () => {
                         >
                             <Form.Item
                                 label="Email"
-                                name="username"
+                                name="email"
                                 rules={[
                                     {
                                         required: true,
