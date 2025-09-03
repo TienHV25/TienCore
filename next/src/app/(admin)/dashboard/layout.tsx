@@ -1,4 +1,4 @@
-// import { auth } from '@/auth';
+import { auth } from '@/auth';
 import AdminContent from '@/components/layout/admin.content';
 import AdminFooter from '@/components/layout/admin.footer';
 import AdminHeader from '@/components/layout/admin.header';
@@ -11,7 +11,7 @@ const AdminLayout = async ({
     children: React.ReactNode;
 }>) => {
 
-    // const session = await auth()
+    const session = await auth()
 
     return (
         <AdminContextProvider>
@@ -20,7 +20,7 @@ const AdminLayout = async ({
                     <AdminSideBar />
                 </div>
                 <div className='right-side' style={{ flex: 1 }}>
-                    <AdminHeader />
+                    <AdminHeader session={session}  />
                     <AdminContent>
                         {children}
                     </AdminContent>

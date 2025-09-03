@@ -39,15 +39,11 @@ export class AuthService {
 
     const payload = { sub: user._id, email: user.email }; // sub: subject
     return {
-      statusCode: 200,
-      message: 'Login success',
-      data: {
         user: {
           _id: user._id,
           email: user.email,
         },
         access_token: this.jwtService.sign(payload),
-      }
     };
   }
 

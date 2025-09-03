@@ -2,7 +2,7 @@ import { InactiveAccountError, InvalidEmailPasswordError } from './utils/errors'
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { sendRequest } from "./utils/api"
-// import { IUser } from "./types/next-auth"
+import { IUser } from "./types/next-auth"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -23,7 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         })
 
-        if (res.statusCode === 200) {
+        if (res.statusCode === 201) {
           // return user object with their profile data
 
           return {
@@ -45,21 +45,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/auth/login",
   },
-//   callbacks: {
-//     jwt({ token, user }) {
-//       if (user) { // User is available during sign-in
-//         token.user = (user as IUser);
-//       }
-//       return token
-//     },
-//     session({ session, token }) {
-//       (session.user as IUser) = token.user;
-//       return session
-//     },
-//     authorized: async ({ auth }) => {
-//       // Logged in users are authenticated, 
-//       //otherwise redirect to login page
-//       return !!auth
-//     },
-//   },
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) { // User is available during sign-in
+        token.user = (user as IUser);
+      }
+      return token
+    },
+    session({ session, token }) {
+      (session.user as IUser) = token.user;
+      return session
+    },
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated, 
+      //otherwise redirect to login page
+      return !!auth
+    },
+  },
 })
