@@ -1,15 +1,18 @@
 'use client'
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Col, Divider, Form, Input, message, notification, Row } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { sendRequest } from '@/utils/api';
 import { useRouter } from 'next/navigation';
+import ModalReactive from './modal.reactive';
 
 const Verify = (props: any) => {
     const { email } = props; 
 
     const router = useRouter()
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const onFinish = async (values: any) => {
         const { email, code } = values;
@@ -87,12 +90,18 @@ const Verify = (props: any) => {
                         Đã có tài khoản? <Link href={"/auth/login"}>Đăng nhập</Link>
                     </div>
                     <div style={{ textAlign: "center", marginTop: "10px" }}>
-                        <Link href={`/auth/resend-activation?email=${email}`}>
+                        <Button type="link" onClick={() => setIsModalOpen(true)}>
                             Gửi lại mã kích hoạt
-                        </Link>
+                        </Button>
                     </div>
                 </fieldset>
             </Col>
+
+            <ModalReactive
+                isModalOpen={isModalOpen}
+                setIsModalOpen={setIsModalOpen}
+                userEmail={email}
+            />
         </Row>
     )
 }

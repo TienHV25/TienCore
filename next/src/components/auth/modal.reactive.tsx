@@ -5,6 +5,7 @@ import { Button, Form, Input, Modal, notification, Steps } from "antd";
 import { SmileOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import { sendRequest } from "@/utils/api";
+import { useRouter } from "next/navigation"; 
 
 const ModalReactive = (props: any) => {
     const { isModalOpen, setIsModalOpen, userEmail } = props;
@@ -13,7 +14,7 @@ const ModalReactive = (props: any) => {
     const [userId, setUserId] = useState("");
 
     const hasMounted = useHasMounted();
-
+    const router = useRouter();
 
     useEffect(() => {
         if (userEmail) {
@@ -26,7 +27,7 @@ const ModalReactive = (props: any) => {
     const onFinishStep0 = async (values: any) => {
         const { email } = values;
         const res = await sendRequest<IBackendRes<any>>({
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/retry-active`,
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/resend-activation`,
             method: "POST",
             body: {
                 email
@@ -46,17 +47,25 @@ const ModalReactive = (props: any) => {
     }
 
     const onFinishStep1 = async (values: any) => {
-        const { code } = values;
-        const res = await sendRequest<IBackendRes<any>>({
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check-code`,
-            method: "POST",
-            body: {
-                code, _id: userId
-            }
-        })
+        const { email, code } = values;
+            const res = await sendRequest<IBackendRes<any>>({
+                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/verify-activation`,
+                method: "POST",
+                body: {
+                    email,
+                    code
+                }
+            })
 
         if (res?.data) {
             setCurrent(2);
+            notification.success({
+                message: "Success",
+                description: "Kích hoạt thành công, đang chuyển hướng..."
+            });
+            setTimeout(() => {
+                router.push("/auth/login"); 
+            }, 1500);
         } else {
             notification.error({
                 message: "Call APIs error",
@@ -138,8 +147,13 @@ const ModalReactive = (props: any) => {
                             onFinish={onFinishStep1}
                             autoComplete="off"
                             layout='vertical'
+                            form={form}
 
                         >
+                            <Form.Item name="email" initialValue={userEmail} hidden>
+                                <Input />
+                            </Form.Item>
+
                             <Form.Item
                                 label="Code"
                                 name="code"
