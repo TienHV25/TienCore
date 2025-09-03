@@ -6,7 +6,7 @@ import { useContext } from 'react';
 import { DownOutlined, SmileOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Dropdown, Space } from 'antd';
-// import { signOut } from "next-auth/react"
+import { signOut } from 'next-auth/react';
 
 const AdminHeader = (props: any) => {
     // const { data: session, status } = useSession();
@@ -28,7 +28,8 @@ const AdminHeader = (props: any) => {
         {
             key: '4',
             danger: true,
-            label: <span>Đăng xuất</span>,
+            label: 'Đăng xuất',
+            onClick: () => signOut(),
         },
     ];
 

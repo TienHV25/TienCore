@@ -78,7 +78,7 @@ export class UsersService {
       throw new BadRequestException('Mã kích hoạt không hợp lệ hoặc đã hết hạn.');
     }
 
-    // Kích hoạt user
+    // active user
     await this.userModel.updateOne(
       { _id: user._id },
       { 

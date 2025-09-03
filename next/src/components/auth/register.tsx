@@ -1,32 +1,48 @@
 'use client'
-import { Button, Col, Divider, Form, Input, notification, Row, Card, Typography } from 'antd';
+import { Button, Col, Divider, Form, Input, notification, Row, Card, Typography, message } from 'antd';
 import { ArrowLeftOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { sendRequest } from '@/utils/api';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const { Title, Text } = Typography;
 
 const Register = () => {
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
 
     const onFinish = async (values: any) => {
         const { email, password } = values;
-        const res = await sendRequest<IBackendRes<any>>({
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`,
-            method: "POST",
-            body: {
-                email,
-                password
+        setLoading(true);
+        
+        try {
+            const res = await sendRequest<IBackendRes<any>>({
+                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`,
+                method: "POST",
+                body: {
+                    email,
+                    password
+                }
+            });
+            
+            if (res?.data) {
+                message.success(res?.data?.message || 'Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.');
+                
+                router.push(`/verify?email=${encodeURIComponent(email)}`);
+            } else {
+                notification.error({
+                    message: "Register error",
+                    description: res?.message
+                });
             }
-        })
-        if (res?.data) {
-            router.push(`/verify/${res?.data?._id}`);
-        } else {
+        } catch (error) {
             notification.error({
                 message: "Register error",
-                description: res?.message
-            })
+                description: "Có lỗi xảy ra khi đăng ký tài khoản"
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -67,11 +83,19 @@ const Register = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please input your email!',
+                                    message: 'Vui lòng nhập email!',
                                 },
+                                {
+                                    type: 'email',
+                                    message: 'Email không đúng định dạng!',
+                                }
                             ]}
                         >
-                            <Input prefix={<MailOutlined />} placeholder="example@email.com" />
+                            <Input 
+                                prefix={<MailOutlined />} 
+                                placeholder="example@email.com" 
+                                size="large"
+                            />
                         </Form.Item>
 
                         <Form.Item
@@ -80,11 +104,19 @@ const Register = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please input your password!',
+                                    message: 'Vui lòng nhập mật khẩu!',
                                 },
+                                {
+                                    min: 6,
+                                    message: 'Mật khẩu phải có ít nhất 6 ký tự!',
+                                }
                             ]}
                         >
-                            <Input.Password prefix={<LockOutlined />} placeholder="********" />
+                            <Input.Password 
+                                prefix={<LockOutlined />} 
+                                placeholder="********" 
+                                size="large"
+                            />
                         </Form.Item>
 
                         <Form.Item
@@ -94,24 +126,34 @@ const Register = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please confirm your password!',
+                                    message: 'Vui lòng xác nhận mật khẩu!',
                                 },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
                                         if (!value || getFieldValue('password') === value) {
                                             return Promise.resolve();
                                         }
-                                        return Promise.reject(new Error('Passwords do not match!'));
+                                        return Promise.reject(new Error('Mật khẩu không khớp!'));
                                     },
                                 }),
                             ]}
                         >
-                            <Input.Password prefix={<LockOutlined />} placeholder="********" />
+                            <Input.Password 
+                                prefix={<LockOutlined />} 
+                                placeholder="********" 
+                                size="large"
+                            />
                         </Form.Item>
 
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" block>
-                                Đăng ký
+                            <Button 
+                                type="primary" 
+                                htmlType="submit" 
+                                block 
+                                size="large"
+                                loading={loading}
+                            >
+                                {loading ? 'Đang xử lý...' : 'Đăng ký'}
                             </Button>
                         </Form.Item>
                     </Form>
@@ -121,6 +163,12 @@ const Register = () => {
                     <div style={{ textAlign: "center" }}>
                         <Text>Đã có tài khoản? </Text>
                         <Link href={"/auth/login"}>Đăng nhập</Link>
+                    </div>
+                    
+                    <div style={{ textAlign: "center", marginTop: 10 }}>
+                        <Link href={"/auth/resend-activation"}>
+                            Gửi lại mã kích hoạt
+                        </Link>
                     </div>
 
                     <div style={{ marginTop: 16 }}>
