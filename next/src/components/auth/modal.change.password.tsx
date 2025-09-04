@@ -9,17 +9,17 @@ const ModalChangePassword = (props: any) => {
     const { isModalOpen, setIsModalOpen } = props;
     const [current, setCurrent] = useState(0);
     const [form] = Form.useForm();
-    const [userId, setUserId] = useState("");
+    const [userEmail, setUserEmail] = useState("");
 
     const hasMounted = useHasMounted();
 
 
     if (!hasMounted) return <></>;
 
-    const onFinishStep0 = async (values: any) => {
+   const onFinishStep0 = async (values: any) => {
         const { email } = values;
         const res = await sendRequest<IBackendRes<any>>({
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/retry-active`,
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/retry-password`,
             method: "POST",
             body: {
                 email
@@ -27,7 +27,7 @@ const ModalChangePassword = (props: any) => {
         })
 
         if (res?.data) {
-            setUserId(res?.data?._id)
+            setUserEmail(res?.data?.email)
             setCurrent(1);
         } else {
             notification.error({
@@ -39,12 +39,19 @@ const ModalChangePassword = (props: any) => {
     }
 
     const onFinishStep1 = async (values: any) => {
-        const { code } = values;
+        const { code, password, confirmPassword } = values;
+        if (password !== confirmPassword) {
+            notification.error({
+                message: "Invalid input",
+                description: "Mật khẩu và xác nhận mật khẩu không chính xác"
+            })
+            return;
+        }
         const res = await sendRequest<IBackendRes<any>>({
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check-code`,
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/change-password`,
             method: "POST",
             body: {
-                code, _id: userId
+                code, password, confirmPassword, email: userEmail
             }
         })
 
@@ -58,6 +65,7 @@ const ModalChangePassword = (props: any) => {
         }
 
     }
+
     return (
         <>
             <Modal

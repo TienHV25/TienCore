@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import * as dayjs from 'dayjs';
 import { MailService } from '@/mail/mail.service';
+import { ChangePasswordAuthDto } from '@/auth/dto/create-auth.dto';
 
 @Injectable()
 export class UsersService {
@@ -182,4 +183,58 @@ export class UsersService {
       throw new BadRequestException(`ID ${id} không đúng định dạng`);
     }
   }
+
+   async retryPassword(email: string) {
+    //check email
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new BadRequestException("Tài khoản không tồn tại")
+    }
+
+
+    //send Email
+    const codeId = uuidv4();
+
+    //update user
+    await user.updateOne({
+      codeId: codeId,
+      codeExpired: dayjs().add(5, 'minutes')
+    })
+
+    //send email
+    await this.mailService.sendChangePasswordEmail(
+          user.email,
+          user.email,
+          codeId, 
+    );
+    return { _id: user._id, email: user.email }
+  }
+
+  async changePassword(data: ChangePasswordAuthDto) {
+    if (data.confirmPassword !== data.password) {
+      throw new BadRequestException("Mật khẩu/xác nhận mật khẩu không chính xác.")
+    }
+
+    //check email
+    const user = await this.userModel.findOne({ email: data.email });
+
+    if (!user) {
+      throw new BadRequestException("Tài khoản không tồn tại")
+    }
+
+    //check expire code
+    const isBeforeCheck = dayjs().isBefore(user.codeExpired);
+
+    if (isBeforeCheck) {
+      //valid => update password
+      const newPassword = await hashPasswordHelper(data.password);
+      await user.updateOne({ password: newPassword })
+      return { isBeforeCheck };
+    } else {
+      throw new BadRequestException("Mã code không hợp lệ hoặc đã hết hạn")
+    }
+
+  }
+
 }

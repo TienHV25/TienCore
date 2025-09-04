@@ -45,4 +45,16 @@ export class MailService {
       html,
     });
   }
+
+  async sendChangePasswordEmail(to: string, email: string, activationCode: string) {
+    const html = await this.renderTemplate('activation', { email, activationCode });
+    const from = this.configService.get<string>('MAIL_FROM');
+
+    await this.transporter.sendMail({
+      from,
+      to,
+      subject: 'Thay đổi mật khẩu - Tiencore',
+      html,
+    });
+  }
 }

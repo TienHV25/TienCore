@@ -12,7 +12,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './passport/jwt-auth.guards'; 
 import { LocalAuthGuard } from './passport/local-auth.guards'; 
 import { Public, ResponseMessage } from './decorator/public-decorator'; 
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { ChangePasswordAuthDto, CreateAuthDto } from './dto/create-auth.dto';
 
 
 @Controller('auth')
@@ -54,4 +54,21 @@ export class AuthController {
   async resendActivation(@Body() body: { email: string }) {
     return this.authService.resendActivationCode(body.email);
   }
+  
+  // resend password
+  @Post('retry-password')
+  @Public()
+  retryPassword(@Body("email") email: string) {
+    return this.authService.retryPassword(email);
+  }
+
+  // change password
+  @Post('change-password')
+  @Public()
+  changePassword(@Body() data: ChangePasswordAuthDto) {
+    return this.authService.changePassword(data);
+  }
+
+
+
 }

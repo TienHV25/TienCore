@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '@/modules/users/users.service'; 
 import { User } from '@/modules/users/schemas/user.schema'; 
+import { ChangePasswordAuthDto } from './dto/create-auth.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -62,4 +63,13 @@ export class AuthService {
   async resendActivationCode(email: string) {
     return this.usersService.resendActivationCode(email);
   }
+
+  retryPassword = async (data: string) => {
+    return await this.usersService.retryPassword(data);
+  }
+
+  changePassword = async (data: ChangePasswordAuthDto) => {
+    return await this.usersService.changePassword(data);
+  }
+
 }
