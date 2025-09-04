@@ -135,24 +135,36 @@ export class UsersService {
     };
   }
 
-  async findAll(query: any, current: number, pageSize: number): Promise<User[]> {
-    const { filter, sort } = aqp(query);
+  async findAll(query: any, current: number, pageSize: number) {
+     const { filter, sort } = aqp(query);
+    if (filter.current) delete filter.current;
+    if (filter.pageSize) delete filter.pageSize;
+
     if (!current) current = 1;
     if (!pageSize) pageSize = 10;
 
-    const totalItems = await this.userModel.countDocuments(filter);
+    const totalItems = (await this.userModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / pageSize);
-    const skip = (current - 1) * pageSize;
 
-    const result = await this.userModel
+    const skip = (current - 1) * (pageSize);
+
+    const results = await this.userModel
       .find(filter)
       .limit(pageSize)
       .skip(skip)
-      .sort(sort as any)
-      .select('-password')
-      .lean();
+      .select("-password")
+      .sort(sort as any);
 
-    return result;
+     return {
+      meta: {
+        current: current, //trang hiện tại
+        pageSize: pageSize, //số lượng bản ghi đã lấy
+        pages: totalPages,  //tổng số trang với điều kiện query
+        total: totalItems // tổng số phần tử (số bản ghi)
+      },
+      results //kết quả query
+    }
+
   }
 
   async findOne(id: number): Promise<User> {
